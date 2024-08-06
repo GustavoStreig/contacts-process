@@ -139,15 +139,35 @@ class DataProcessor:
                     return ""
                 phone = ''.join(filter(str.isdigit, str(phone)))
                 return phone
-
+            # Normalizar números de telefone
             df_telefone_valido['Telefone'] = df_telefone_valido['Telefone'].apply(normalize_phone_number)
             df_csv['number'] = df_csv['number'].apply(normalize_phone_number)
+
+            # Converter para string
             df_telefone_valido['Telefone'] = df_telefone_valido['Telefone'].astype(str)
             df_csv['number'] = df_csv['number'].astype(str)
+
+            # Encontrar números duplicados
             duplicated_numbers = df_telefone_valido[df_telefone_valido['Telefone'].isin(df_csv['number'])]
+
+            # Adicionar colunas free2 e preferredagents
+            duplicated_numbers = duplicated_numbers.merge(df_csv[['number', 'free2', 'preferredagents']], 
+                                                        left_on='Telefone', 
+                                                        right_on='number', 
+                                                        how='left')
+
+            # Remover a coluna 'number' após o merge
+            duplicated_numbers = duplicated_numbers.drop(columns=['number'])
+
+            # Salvar o relatório de duplicatas em um arquivo Excel
             duplicated_report_path = os.path.join(self.output_folder, 'Duplicated_Numbers_Report.xlsx')
             duplicated_numbers.to_excel(duplicated_report_path, index=False)
+
+            # Remover duplicatas do DataFrame original
             df_telefone_valido = df_telefone_valido[~df_telefone_valido['Telefone'].isin(df_csv['number'])]
+
+            print(df_csv)
+            
 
         base_name = os.path.splitext(os.path.basename(self.excel_file_path))[0]
         output_path_final = os.path.join(self.output_folder, f'{base_name}_Contatos_Processados_Validos_Atualizado.xlsx')

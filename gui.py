@@ -8,7 +8,7 @@ class App:
         self.root = root  # Adiciona root como um atributo da classe
 
         self.root.title('Excel Processor')
-        self.root.geometry('500x200')
+        self.root.geometry('500x150')
 
         self.excel_file_var = tk.StringVar()
         self.csv_file_var = tk.StringVar()
